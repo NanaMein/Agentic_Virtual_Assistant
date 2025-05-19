@@ -11,7 +11,15 @@ load_dotenv()
 def crew_llm_worker() -> LLM:
     return LLM(
         base_url="https://api.groq.com/openai/v1",
-        model=os.getenv('LLAMA_LLM_SMALL'),
+        model=os.getenv('LLM_SMALL'),
+        api_key=os.getenv('API_KEY'),
+        temperature=.3
+    )
+
+def crew_llm_manager() -> LLM:
+    return LLM(
+        base_url="https://api.groq.com/openai/v1",
+        model=os.getenv('LLM_BIG'),
         api_key=os.getenv('API_KEY'),
         temperature=.3
     )
