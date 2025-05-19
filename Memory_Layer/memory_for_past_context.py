@@ -1,16 +1,18 @@
 from mem0 import Memory
 from dotenv import load_dotenv
+from LLM_and_Model_Config.llm_config import llama_llm_small, llama_llm_big
 import os
 
 load_dotenv()
 
-groq = os.getenv('API_KEY')
-os.environ['GROQ_API_KEY'] = groq
 url = os.getenv('URI')
 token = os.getenv('TOKEN')
-groq_llm = os.getenv('LLM2')
+groq_llm = os.getenv('LLM_SMALL')
+groq = os.getenv('API_KEY')
+os.environ['GROQ_API_KEY'] = groq
 
-context = { "user_id" : "test_user" }
+
+
 config = {
     "vector_store": {
         "provider": "milvus",
