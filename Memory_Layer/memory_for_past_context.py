@@ -47,14 +47,14 @@ def safe_text(text: str) -> str:
 
 def add_memories(user_input: str, ai_output: str):
 
-    input = safe_text(user_input)
-    output = safe_text(ai_output)
+    input = f"{safe_text(user_input)}"
+    output = f"{safe_text(ai_output)}"
 
     messages = [
         {"role": "user", "content": input},
         {"role": "assistant", "content": output},
     ]
-    m.add(messages, user_id="papa alfie", metadata={"category" : "daily_conversation"})
+    m.add(messages, user_id="Alfeo", metadata={"category" : "default"})
 
 def add_memories_v1(user_input: str, ai_output: str):
 
@@ -66,7 +66,7 @@ def add_memories_v1(user_input: str, ai_output: str):
 
 
 def search_memories(user_query: str):
-    related_memories = m.search(user_query, user_id="papa_alfie")
+    related_memories = m.search(user_query, user_id="Alfeo")
     return related_memories
 
 def chat_memories( user_chat: str):
@@ -74,7 +74,7 @@ def chat_memories( user_chat: str):
     return chat_completion
 
 def previous_memories():
-    all_memo = m.get_all(user_id="papa_alfie", limit=5)
+    all_memo = m.get_all(user_id="Alfeo", limit=5)
     return all_memo
 
 def reset_memories():
