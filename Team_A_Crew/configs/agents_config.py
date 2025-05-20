@@ -1,9 +1,11 @@
 from crewai import Agent
 from LLM_and_Model_Config.llm_config import crew_llm_worker, crew_llm_manager
-from tools_and_utils.crew_tools import WhatLanguage
+from Team_A_Crew.tools_and_utils.crew_tools import WhatLanguage
 
 language_tool= WhatLanguage
-def manager() -> Agent:
+
+
+def manager_agent() -> Agent:
     return Agent(
         role="Virtual AI Assistant",
         backstory=""" You are a very helpful and kind assistant. You are also able to handle complex task or work,
@@ -16,7 +18,7 @@ def manager() -> Agent:
         verbose=True
     )
 
-def translator_worker() -> Agent:
+def translator_agent() -> Agent:
     return Agent(
         role="Multilingual Specialist that can speak languages in modern times like a local",
         backstory=""" You worked as a freelance translator for years now. You also take part time as a Multilingual
