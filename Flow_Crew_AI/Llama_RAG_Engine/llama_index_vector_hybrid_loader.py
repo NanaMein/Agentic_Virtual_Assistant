@@ -12,7 +12,9 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-print("starting to fucking work")
+
+
+
 embed_model = HuggingFaceEmbedding(model_name='intfloat/e5-base')
 
 llm = ChatGroq(
@@ -25,7 +27,7 @@ llm = ChatGroq(
 vector_store = MilvusVectorStore(
     uri=os.getenv('NEW_URI'),
     token=os.getenv('NEW_TOKEN'),
-    collection_name='Character_Collections',
+    collection_name='Character_Collections_v1',
     dim=768,
     embedding_field='embeddings',
     enable_sparse=True,
@@ -33,11 +35,19 @@ vector_store = MilvusVectorStore(
     overwrite=False,
     sparse_embedding_function=BGEM3SparseEmbeddingFunction()
 )
+load_documents = SimpleDirectoryReader(input_dir='./data_sources').load_data()
 
+parser = SentenceSplitter(chunk_size=512, chunk_overlap=50)
 
-index = VectorStoreIndex.from_vector_store(
+nodes = parser.get_nodes_from_documents(load_documents)
+
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+index = VectorStoreIndex(
+    nodes,
     vector_store=vector_store,
-    embed_model=embed_model
+    embed_model=embed_model,
+    storage_context=storage_context
 )
 
 query_engine = index.as_query_engine(
