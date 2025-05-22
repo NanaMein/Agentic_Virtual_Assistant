@@ -15,6 +15,11 @@ llm = ChatGroq(
     api_key=os.getenv('NEW_API_KEY'),
     temperature=.3
 )
+llm2 = ChatGroq(
+    model=os.getenv('LLM_BIG'),
+    api_key=os.getenv('NEW_API_KEY'),
+    temperature=.3
+)
 
 vector_store = MilvusVectorStore(
     uri=os.getenv('NEW_URI'),
@@ -40,10 +45,17 @@ query_engine = index.as_query_engine(
     similarity_top_k=5
 )
 
-def query_engine_chat(inputs: str) -> str:
-    return str(query_engine.query(inputs))
+def query_engine_small(input_query: str) -> str:
+    return str(query_engine.query(input_query))
 
 
+def query_engine_big(input_query: str) -> str:
+    engine = index.as_query_engine(
+        llm=llm2,
+        vector_store_query_mode="hybrid",
+        similarity_top_k=5
+    )
+    return str(engine.query(input_query))
 
 
 
