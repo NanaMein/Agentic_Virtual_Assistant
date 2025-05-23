@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-
+print("LLAMA INDEX RAG LOADING...")
 embed_model = HuggingFaceEmbedding(model_name='intfloat/e5-base')
 
 llm = ChatGroq(
@@ -55,10 +55,24 @@ def query_engine_big(input_query: str) -> str:
         vector_store_query_mode="hybrid",
         similarity_top_k=5
     )
-    return str(engine.query(input_query))
+    instruction_prompt = f"""
+        ### SYSTEM:
+        You are a helpful assistant. Answer the user's question ONLY using the provided context.
+        
+        ### INSTRUCTION:
+        Given the following context, please answer the user's question. 
+        If the answer is not present in the context, state that you cannot answer the 
+        question based on the provided information.
+        
+        <user>
+        query: [{input_query}]
+        </user>
+        """
+
+    return str(engine.query(instruction_prompt))
 
 
-
+print("LLAMA RAG ENGINE LOAD COMPLETE")
 
 
 
