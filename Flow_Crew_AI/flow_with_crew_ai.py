@@ -1,5 +1,5 @@
 import asyncio
-
+import random
 from crewai.flow.flow import Flow, listen, router, start, or_, and_
 from pydantic import BaseModel
 from Flow_Crew_AI.Llama_RAG_Engine.llama_index_rag_engine import query_engine_small, query_engine_big
@@ -35,28 +35,26 @@ class FionicaFlow(Flow[FionicaState]):
             return "no"
 
     @listen(starting)
-    def ai_agent(self):
-        # roleplayer = AgenticRoleplayer()
-        # result = asyncio.run(roleplayer.run_crew(user_input))
+    async def ai_agent(self):
+        sentences = random.randint(1,5)
         fu_xuan = AgenticRoleplayer()
         prompt = (f"### User: {self.state.input_flow_query}\n"
-                  f"### TimeNow: {self.state.time}"
                   f"### Previous chat context: {self.state.chat_history}"
-                  """
-                  ### Instruction: Based on the context provided, you will generate an answer based on 
-                  user query. With the help of time and chat history, generate new content for continuous
-                  conversational turn. Reply or generate at a maximum of 5 sentences and minimum of 1. 
-                  Random sentence length and random personality switch sometimes.
+                  f"""
+                  ### Instruction: Previous chat context will be used as reference for context.
+                  Please provide an answer based on the query or user question. Reply and answer like
+                  a conversational dialogue or a script. Generate {sentences} sentence/s as an output.
                   """)
-        message = fu_xuan.run_crew(input_msg=prompt)
+        # message = fu_xuan.run_crew(input_msg=prompt)
         # message = asyncio.run(fu_xuan.run_crew(input_msg=prompt))
+        message = await fu_xuan.run_crew(input_msg=prompt)
         self.state.message = message
 
     @listen(ai_agent)
     def adding_memories(self):
         add_to_memory(user_input=self.state.input_flow_query, ai_output=self.state.message)
         return f"""
-                \nUser: {self.state.input_flow_query}\n\n
+                \nUser: {self.state.input_flow_query}\n
                 Assistant: {self.state.message}
                 """
 
