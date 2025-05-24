@@ -116,6 +116,7 @@ def learning_knowledge (message: str):
 #learning user
 def search_learned_knowledge(knowledge: str):
     return mem0.search(query=knowledge, user_id="learning_user", limit=10)
+
 #local history
 def add_to_memory(user_input: str, ai_output: str) -> bool:
     try:
@@ -139,29 +140,29 @@ def memory_rag_experimental_prompt(message: str):
     ph_time = datetime.now(pytz.timezone('Asia/Manila'))
     prompt_template = f"""
     <chat_history>
-    [{local_chat_history}]
+    previous chat context: [{local_chat_history}]
     </chat_history>
 
-    <current_turn>
-    User: [{message}]
-    </current_turn>
+    <latest_input_query>
+    User query: [{message}]
+    </latest_input_query>
     
-    <vector_search>
-    [{vector_chat_history}]
-    </vector_search>
+    <document_info_context>
+    document: [{vector_chat_history}]
+    </document_info_context>
 
     <date_time>
     [{ph_time.strftime('%Y-%m-%d %H:%M:%S %Z')}]
     </date_time>
+    
     ### INSTRUCTION:
     Please summarize all the context provided, starting with chat history and 
-    current conversation turn but also vector search but it is less priority for vector. 
-    Vector search is only used for the previous past conversation or correction if chat 
-    history have less or little connection, relation or semantic with the current chat history.
+    current user conversation but also document info context but this is optional or less importance.  
+    But will be used as reference, when you cant find it in chat history.
     
-    ###SYSTEM:
-    You are a helpful assistant. You are a specialist in conversational summarization. You
-    only summarize important details and emphasize the relation between entities.
+    ### SYSTEM:
+    You are a summarizing ai assistant. You are a specialist in conversational summarization. 
+    You only summarize important details and emphasize the relation between entities.
     """
     return prompt_template
 
@@ -187,5 +188,28 @@ def reseting_local_memory():
 #         model="compound-beta-mini",
 #     )
 #     return completion.choices[0].message.content
+
+new_memory = ChatMemory.from_defaults(
+    # chat_history=[],
+    session_id="new_memory_sessions",
+    chat_history_token_ratio=.8,
+    token_limit=5000,
+    token_flush_size=1500
+)
+def add_local_chat_history(input:str , output:str):
+    try:
+        new_memory.put(ChatMessage.from_str(content=input, role="user", metadata={"context": "user query"}))
+        new_memory.put(ChatMessage.from_str(content=output, role="assistant", metadata={"context": "ai response"}))
+        return True
+
+    except Exception as e:  # Catching any potential errors
+        print(f"Error adding to memory: {e}")  # Optional: Log the error
+        return False
+
+def get_local_chat_history():
+    return new_memory.get()
+
+def delete_local_chat_history():
+    return new_memory.reset()
 
 print("MEMORY LAYER LOADING COMPLETE")
