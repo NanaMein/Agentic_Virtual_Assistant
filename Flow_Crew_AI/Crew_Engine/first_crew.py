@@ -4,7 +4,11 @@ import os
 from typing import Any
 from dotenv import load_dotenv
 from crewai import Agent, Crew, Task, Process, LLM
+from crewai.project import tool
+from groq.types.chat import ChatCompletionAssistantMessageParam, ChatCompletionUserMessageParam
+
 from .tool_for_crew import CompoundBeta
+from groq import Groq
 
 
 load_dotenv()
@@ -12,18 +16,32 @@ load_dotenv()
 
 def agent_llm_basic() -> LLM:
     return LLM(
-        model=os.getenv('LLM_SMALL'),
+        model=os.getenv('LLM_SMALL') or os.getenv('LLM'),
         api_base=os.getenv('API_BASE_GROQ'),
         api_key=os.getenv('NEW_API_KEY'),
         temperature=0.75
     )
-def tool_llm() -> LLM:
-    return LLM(
-        model="groq/compound-beta",
-        api_base=os.getenv('API_BASE_GROQ'),
-        api_key=os.getenv('NEW_API_KEY'),
-        temperature=0.75
+
+@tool
+def tool_llm(argument: str)->str:
+    """Web search tool that answers questions using Groq LLM."""
+    client = Groq(api_key=os.environ.get('API_KEY'))
+    completion = client.chat.completions.create(
+        messages=[
+            ChatCompletionAssistantMessageParam(
+                role="assistant",
+                content="You are a very helpful ai assistant tool",
+            ),
+            ChatCompletionUserMessageParam(
+                role="user",
+                content=argument,
+            ),
+        ],
+        model="compound-beta-mini",
     )
+    return completion.choices[0].message.content
+
+
 def manager_llm()-> LLM:
     return LLM(
         model=os.getenv('LLM_BIG'),
@@ -40,7 +58,7 @@ class AgenticRoleplayer:
 
     def __init__(self):
         self.llm = agent_llm_basic()
-        self.tool = tool_llm()
+        # self.tool = tool_llm()
         self.manager = manager_llm()
         self.real_tool = CompoundBeta()
         self.timenow = datetime.now(timezone.utc)
@@ -71,14 +89,16 @@ class AgenticRoleplayer:
                 "You can only reply in English or Tagalog, or a mix of both. "
                 "Conversational scenarios. Always generate new content, conversation,"
                 "topics, comedy and much more in your imagination"
-                "Use tools if cant understand other words "
+                "Use tools if cant understand other words or you want to generate new modern words"
+                "for content generation"
             ),
             agent=self.translator_agent(),
             expected_output="You will reply based on the context provided."
                             "<context>{human_message}</context>"
                             "<real_time>"
                             f"###UTC Time: {self.timenow}"
-                            "Please convert UTC time to Philippine Time"
+                            "UTC Time now will only be used as referenced, but if its used, please"
+                            "convert it to Philippine time"
                             "</real_time>",
             tools=[self.real_tool]
 
@@ -92,24 +112,23 @@ class AgenticRoleplayer:
             tasks=task,
             process=Process.sequential,
             verbose=False,
-            function_calling_llm=self.tool,
+            # function_calling_llm=self.tool,
             # planning=True,
             # manager_llm=self.manager
         )
 
-    # async def run_crew(self, input_msg: str):
-    #     crew = self.build_crew(input_msg)
-    #     inputs = {
-    #         "human_message": input_msg
-    #           # Optionally extend this later with memory
-    #     }
-    #     return await crew.kickoff_async(inputs=inputs)
-    def run_crew(self, input_msg: str):
+    async def run_crew(self, input_msg: str):
         crew = self.build_crew()
         inputs = {
             "human_message": input_msg
         }
-        return crew.kickoff(inputs=inputs)
+        return await crew.kickoff_async(inputs=inputs)
+    # def run_crew(self, input_msg: str):
+    #     crew = self.build_crew()
+    #     inputs = {
+    #         "human_message": input_msg
+    #     }
+    #     return crew.kickoff(inputs=inputs)
 
 # -------- Entry Point (Script Usage) --------
 # if __name__ == "__main__":
