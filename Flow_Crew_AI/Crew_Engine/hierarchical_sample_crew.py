@@ -80,11 +80,26 @@ class RagCharacterCrew:
     def lore_task(self) -> Task:
         return Task(
             description="""
-                ###
+                ### User Input:
+                User: {input_message}
+                
+                ### Instruction:
+                
+                ### User intent:
+                You are to understand the emotion or expression of user input. 
+                
+                ### Tool:
+                <Tool use example>
+                user: Im feeling good today, what about your?
+                ai: You think that user is feeling great today so you will use the tool and ask, "if user is happy, 
+                should i reply in sarcasm or be grateful too? what are personality of Fu xuan"
+                </Tool use example>
+
             """,
 
             expected_output="""
-            
+                using user input, use tool to search the what lore, personality, behavior, or even habits.
+                final output or format would be User input and About the character from the tool.
             """,
             agent=
         )
