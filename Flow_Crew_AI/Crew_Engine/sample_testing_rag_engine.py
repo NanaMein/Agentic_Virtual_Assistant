@@ -56,7 +56,7 @@ def query_engine_big(input_query: str) -> str:
         similarity_top_k=5
     )
     instruction_prompt = f"""
-        ### SYSTEM:
+        ### SYSTEM(Priming):
         You are a helpful assistant. Answer the user's question ONLY using the provided context.
         
         ### INSTRUCTION:
@@ -74,6 +74,10 @@ def query_engine_big(input_query: str) -> str:
 
 print("LLAMA RAG ENGINE LOAD COMPLETE")
 
-
-
-
+#
+#
+# print('testing')
+# message = "Who is Fu xuan and her role?"
+# print(query_engine_small(input_query=message))
+# print("\n")
+# print(query_engine_big(input_query=message))
