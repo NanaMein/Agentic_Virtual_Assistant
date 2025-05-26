@@ -1,36 +1,28 @@
-import asyncio
 import os
+# from functools import lru_cache
 from typing import Any
-
-from appdirs import system
 from dotenv import load_dotenv
 from crewai.tools import BaseTool
-from groq.types import FunctionDefinition
 from pydantic import BaseModel, Field
-from groq import Groq, AsyncGroq
+from groq import Groq
 from typing import Type
 from groq.types.chat import (
     ChatCompletionUserMessageParam,
     ChatCompletionAssistantMessageParam,
-    ChatCompletionSystemMessageParam,
-    ChatCompletionToolParam,
-    ChatCompletionToolMessageParam
+    ChatCompletionSystemMessageParam
 )
-import random
-#
-# random_int = random.randint(1, 5)
-# print(random_int)
-# seasons = ["Spring", "Summer", "Autumn", "Winter"]
-# random_season = random.choice(seasons)
-# print(random_season)
+from .character_personality import query_engine_chat
+from Flow_Crew_AI.Llama_RAG_Engine.llama_index_rag_engine import query_engine_big as rag_query_tool
+from Flow_Crew_AI.Llama_RAG_Engine.llama_index_rag_engine import query_engine_small as backup_tool
+
+
 print('TOOL FOR CREW LOADING')
 load_dotenv()
 
 
 class BaseCompoundBeta(BaseModel):
     argument: str = Field(..., description="Input for what you want to search in the web")
-
-
+# @lru_cache(maxsize=50)
 class CompoundBeta(BaseTool):
     name: str = "Web search query tool"
     description: str = "Tool for searching the web"
@@ -75,6 +67,7 @@ class CompoundBeta(BaseTool):
 class ToolInput(BaseModel):
     message: str = Field(...,description="query for what is being searched in the web")
 
+# @lru_cache(maxsize=50)
 class CompoundBetaTool(BaseTool):
 
     name: str = "Web Search Tool"
@@ -130,13 +123,10 @@ def tool_llm(argument: str)->str:
 
 
 
-from sample_testing_rag_engine import query_engine_big as rag_query_tool
-from sample_testing_rag_engine import query_engine_small as backup_tool
-
 class RagQueryInput(BaseModel):
     input_query: str = Field(..., description="query for what is being searched in the context provided")
 
-
+# @lru_cache(maxsize=50)
 class RagTool(BaseTool):
     name: str = "Character Lore Tool"
     description: str = "Character biography, history, personality, and description of Fu Xuan and Xianzhou Alliance"
@@ -151,6 +141,41 @@ class RagTool(BaseTool):
         """ RAG LLAMA FUNCTION HERE"""
         try:
             output = rag_query_tool(input_query=input_query)
+            return output
+        except Exception as e:
+            print(f"Error for QUERY BIG LLAMA, WILL USE LLAMA SMALL INSTEAD{e}")
+            final = backup_tool(input_query=input_query)
+            return final
+
+
+
+
+
+
+
+
+
+
+
+class CharacterPersonalityInput(BaseModel):
+    input_query: str = Field(..., description="query for what is being searched in the context provided")
+
+# @lru_cache(maxsize=50)
+class CharacterRolePlay(BaseTool):
+    name: str = "Character description tool"
+    description: str = """Character biography, history, personality, relationship and 
+        Fionica, the virtual daughter"""
+    args_schema: Type[BaseModel] = CharacterPersonalityInput
+
+    def _run(
+            self,
+            input_query: str,
+            *args: Any,
+            **kwargs: Any,
+    ) -> Any:
+        """ RAG LLAMA FUNCTION HERE"""
+        try:
+            output = query_engine_chat(inputs=input_query)
             return output
         except Exception as e:
             print(f"Error for QUERY BIG LLAMA, WILL USE LLAMA SMALL INSTEAD{e}")
