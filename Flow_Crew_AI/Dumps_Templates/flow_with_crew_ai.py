@@ -57,20 +57,20 @@ async def flow_run(input_message: str) -> str:
 
 print("FLOW ENGINE LOADING COMPLETE")
 
-
-def run():
-    while True:
-        print("starting loop and looping again")
-        input_message = input("Write something: \n\n")
-        if input_message == "exitingloop":
-            reseting_local_memory()
-            break
-        # flow = flow_run(input_message=input_message)
-        flow =asyncio.run(flow_run(input_message=input_message))
-        print(flow)
-        print("\n*********************************ENDLINE**********************************\n\n")
-
-
-if __name__ == '__main__':
-    run()
+#
+# def run():
+#     while True:
+#         print("starting loop and looping again")
+#         input_message = input("Write something: \n\n")
+#         if input_message == "exitingloop":
+#             reseting_local_memory()
+#             break
+#         # flow = flow_run(input_message=input_message)
+#         flow =asyncio.run(flow_run(input_message=input_message))
+#         print(flow)
+#         print("\n*********************************ENDLINE**********************************\n\n")
+#
+#
+# if __name__ == '__main__':
+#     run()
 

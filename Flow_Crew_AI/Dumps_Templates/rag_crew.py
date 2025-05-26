@@ -15,7 +15,7 @@ from crewai import Agent, Crew, Task, Process, LLM, CrewOutput
 #     ChatCompletionUserMessageParam,
 #     ChatCompletionSystemMessageParam
 # )
-from tool_for_crew import RagTool, CompoundBetaTool
+# from tool_for_crew import RagTool, CompoundBetaTool
 
 # def llm_groq() -> LLM:
 #     return LLM(
@@ -42,8 +42,8 @@ class RagCharacterCrew:
 
     def __init__(self):
         self.llm = llm_groq()
-        self.rag_tool = RagTool()
-        self.web_tool = CompoundBetaTool()
+        # self.rag_tool = RagTool()
+        # self.web_tool = CompoundBetaTool()
 
     def rag_agent(self) -> Agent:
         return Agent(
