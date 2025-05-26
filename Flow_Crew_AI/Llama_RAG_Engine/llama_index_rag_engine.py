@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.groq import Groq as ChatGroq
 from llama_index.vector_stores.milvus import MilvusVectorStore
@@ -20,8 +22,9 @@ llm2 = ChatGroq(
     api_key=os.getenv('NEW_API_KEY'),
     temperature=.3
 )
-
-vector_store = MilvusVectorStore(
+@lru_cache(maxsize=1)
+def get_vector_store():
+    return MilvusVectorStore(
     uri=os.getenv('NEW_URI'),
     token=os.getenv('NEW_TOKEN'),
     collection_name='Character_Collections_v1',
@@ -32,20 +35,25 @@ vector_store = MilvusVectorStore(
     overwrite=False,
     sparse_embedding_function=BGEM3SparseEmbeddingFunction()
 )
+def lazy_load():
+    vector = get_vector_store()
+    index = VectorStoreIndex.from_vector_store(
+        vector_store=vector,
+        embed_model=embed_model
+    )
+    return index
+
+index = lazy_load()
 
 
-index = VectorStoreIndex.from_vector_store(
-    vector_store=vector_store,
-    embed_model=embed_model
-)
 
-query_engine = index.as_query_engine(
-    llm=llm,
-    vector_store_query_mode="hybrid",
-    similarity_top_k=5
-)
 
 def query_engine_small(input_query: str) -> str:
+    query_engine = index.as_query_engine(
+        llm=llm,
+        vector_store_query_mode="hybrid",
+        similarity_top_k=5
+    )
     return str(query_engine.query(input_query))
 
 

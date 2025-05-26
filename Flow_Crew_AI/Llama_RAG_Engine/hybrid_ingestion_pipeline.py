@@ -59,17 +59,6 @@ query_engine = index.as_query_engine(
 def query_engine_chat(inputs: str) -> str:
     return str(query_engine.query(inputs))
 
-while True:
-    print("testing\n")
-    question = input("Write something you like (type 'exit' to quit): \n\n")
-
-    if question.lower() == "exit":
-        print("Exiting the loop.")
-        break
-
-    output = query_engine_chat(question)
-    print(output)
-    print("****************************************************************\n\n")
 
 
 
