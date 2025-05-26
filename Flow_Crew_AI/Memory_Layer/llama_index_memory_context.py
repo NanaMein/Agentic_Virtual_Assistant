@@ -40,7 +40,7 @@ def get_vector_store():
         embedding_field='embeddings',
         enable_sparse=True,
         enable_dense=True,
-        overwrite=True,
+        overwrite=True,# CHANGE IT FOR DEVELOPMENT STAGE ONLY
         sparse_embedding_function=BGEM3SparseEmbeddingFunction(),
         search_config={"nprobe": 20},
         similarity_metric="L2",  # or "IP"
@@ -51,20 +51,25 @@ def get_vector_store():
 
     )
 def lazy_loader():
+
     return get_vector_store()
+
 print("lazy loader on the roll")
 lazy_vector = lazy_loader()
 
-def indexed_chat_context(user_content:str , assistant_content:str):
+async def indexed_chat_context(user_content:str , assistant_content:str):
     message_store = [
         f"[Role => User// Content => {user_content}]",
         f"[Role => Assistant// Content => {assistant_content}]"
     ]
     current_timestamp = datetime.now(timezone.utc).isoformat()  # Or use `datetime.now()` for local time
-    documents = [Document(text=store,metadata={
+
+    documents = [Document(
+        text=text,metadata={
                 "source": "chat_context",  # Required for Milvus
                 "timestamp": current_timestamp  # Add timestamp
-            }) for store in message_store]
+            })
+        for text in message_store]
 
     parser = SentenceSplitter(chunk_size=512, chunk_overlap=50)
 
@@ -78,7 +83,7 @@ def indexed_chat_context(user_content:str , assistant_content:str):
             vector_store=lazy_vector
         )
     )
-def indexed_query_engine(input_question: str):
+async def indexed_query_engine(input_question: str) -> str:
     # now = int(datetime.now().timestamp())
     # one_day_ago = now - 86400
 
@@ -96,24 +101,25 @@ def indexed_query_engine(input_question: str):
         # filters=("timestamp" > str(one_day_ago)),  # Only recent documents
         similarity_top_k=5
     )
-    return query_engine.query(input_question)
+    obj_str = query_engine.query(input_question)
+    return obj_str.response
 
 # def query_engine_chat(inputs: str) -> str:
 #     return str(query_engine.query(inputs))
 
-print("starting loop")
-while True:
-    print("testing\n")
-    question = input("Write something you like (type 'exit' to quit): \n\n")
-
-    if question.lower() == "exit":
-        print("Exiting the loop.")
-        break
-
-    output = indexed_query_engine(question)
-    indexed_chat_context(question,output.response)
-    print(output)
-    print("****************************************************************\n\n")
+# print("starting loop")
+# while True:
+#     print("testing\n")
+#     question = input("Write something you like (type 'exit' to quit): \n\n")
+#
+#     if question.lower() == "exit":
+#         print("Exiting the loop.")
+#         break
+#
+#     output = indexed_query_engine(question)
+#     indexed_chat_context(question,output.response)
+#     print(output)
+#     print("****************************************************************\n\n")
 
 
 

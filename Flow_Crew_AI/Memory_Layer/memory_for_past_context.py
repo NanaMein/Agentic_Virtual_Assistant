@@ -4,6 +4,8 @@
 #     ChatCompletionUserMessageParam,
 #     ChatCompletionSystemMessageParam
 # )
+import asyncio
+
 from mem0 import Memory
 from llama_index.core.memory import Memory as ChatMemory
 from llama_index.core.llms import ChatMessage
@@ -192,10 +194,11 @@ def reseting_local_memory():
 new_memory = ChatMemory.from_defaults(
     # chat_history=[],
     session_id="new_memory_sessions",
-    chat_history_token_ratio=.8,
-    token_limit=5000,
-    token_flush_size=1500
+    chat_history_token_ratio=.7,
+    token_limit=15000,
+    token_flush_size=3000#, chat_history=
 )
+
 def add_local_chat_history(input:str , output:str):
     try:
         new_memory.put(ChatMessage.from_str(content=input, role="user", metadata={"context": "user query"}))
@@ -211,5 +214,75 @@ def get_local_chat_history():
 
 def delete_local_chat_history():
     return new_memory.reset()
+from Flow_Crew_AI.Groq_Chat_Completion_Engine.Chat_Completion_Pipeline import groq_chat_completion_async, chat_completion
+class LocalMemoryStorage():
+    def __init__(self):
+        self.new_memory = ChatMemory.from_defaults(
+            # chat_history=[],
+            session_id="new_memory_sessions",
+            chat_history_token_ratio=.7,
+            token_limit=15000,
+            token_flush_size=3000
+        )
+
+
+    async def add_local_chat_history(self, input: str, output: str):
+        try:
+            self.new_memory.put(ChatMessage.from_str(content=input, role="user", metadata={"context": "user query"}))
+            self.new_memory.put(ChatMessage.from_str(content=output, role="assistant", metadata={"context": "ai response"}))
+            return True
+
+        except Exception as e:  # Catching any potential errors
+            print(f"Error adding to memory: {e}")  # Optional: Log the error
+            return False
+
+    async def get_local_chat_history(self):
+        return self.new_memory.get()
+
+    async def delete_local_chat_history(self):
+        return self.new_memory.reset()
+
+    async def local_summary_chat_history(self):
+        memory_context = self.new_memory.get()
+
+        user = f"""
+            <chat_history>
+            {memory_context} 
+            </chat_history>
+            """
+        assistant = """ You are to summarize the chat history into a context that is understandable """
+
+        system = """You are a summarizing chatbot. You summarize all chat history, 
+                  from input query to understand the context,
+                  """
+
+        token_out: int = 5000
+
+        return await groq_chat_completion_async(
+            user_content=user,
+            assistant_content=assistant,
+            system_content=system,
+            llm=os.getenv('LLM_SMALL'),
+            token_out=token_out
+        )
+
+    async def local_summary_chat_history_v1(self):
+        prompt = self.new_memory.get()
+        memory_template = f"""
+                        
+            ### System: You are a summarizing chatbot. You can summarize any chat history without missing out 
+            important details, relationship, scenario, environment, and other minor details. 
+
+            ### Memory chat context: [{prompt}]
+            
+            ### Instruction: Please summarize the memory chat context into something understandable by human.
+            """
+        result = await chat_completion(memory_template)
+        return result
+
+async def local_memory_async():
+    local = LocalMemoryStorage()
+    return local
 
 print("MEMORY LAYER LOADING COMPLETE")
+
