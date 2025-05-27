@@ -1,6 +1,5 @@
 import asyncio
 from typing import Optional
-
 from crewai.flow import persist, Flow, listen, start, or_, and_, router
 from pydantic import BaseModel
 from Flow_Crew_AI.Crew_Engine.hierarchical_v1 import run_crew_async
@@ -9,9 +8,9 @@ import pytz
 
 print("FLOW ENGINE LOADING...")
 
-from Flow_Crew_AI.Groq_Chat_Completion_Engine.Chat_Completion_Pipeline import router_llm_async, chat_completion
-from Crew_Engine.character_personality import query_engine_chat_async
-from Memory_Layer.llama_index_memory_context import indexed_chat_context, indexed_query_engine
+from .Groq_Chat_Completion_Engine.Chat_Completion_Pipeline import router_llm_async, chat_completion
+from .Crew_Engine.agents_personality import query_engine_chat_async
+from .Memory_Layer.llama_index_memory_context import indexed_chat_context, indexed_query_engine
 
 class FionicaState(BaseModel):
     input_flow_query: str = ""
@@ -148,30 +147,30 @@ async def flow_run(input_message: str):
 print("FLOW ENGINE LOADING COMPLETE")
 
 
-
-def run():
-    # Create a single event loop for the entire session
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    try:
-        while True:
-            print("Starting conversation...")
-            input_message = input("Write something: \n\n")
-            if input_message.lower() == "exit the loop now":
-                break
-
-            # Run async code in the existing loop
-            flow = loop.run_until_complete(flow_run(input_message))
-            print(flow)
-            print("\n" + "*" * 35 + " END " + "*" * 35 + "\n")
-
-    finally:
-        # Cleanup when done
-        loop.run_until_complete(asyncio.sleep(0))
-        loop.close()
-        print("Event loop closed properly")
-
-
-if __name__ == '__main__':
-    run()
+#
+# def run():
+#     # Create a single event loop for the entire session
+#     loop = asyncio.new_event_loop()
+#     asyncio.set_event_loop(loop)
+#
+#     try:
+#         while True:
+#             print("Starting conversation...")
+#             input_message = input("Write something: \n\n")
+#             if input_message.lower() == "exit the loop now":
+#                 break
+#
+#             # Run async code in the existing loop
+#             flow = loop.run_until_complete(flow_run(input_message))
+#             print(flow)
+#             print("\n" + "*" * 35 + " END " + "*" * 35 + "\n")
+#
+#     finally:
+#         # Cleanup when done
+#         loop.run_until_complete(asyncio.sleep(0))
+#         loop.close()
+#         print("Event loop closed properly")
+#
+#
+# if __name__ == '__main__':
+#     run()
