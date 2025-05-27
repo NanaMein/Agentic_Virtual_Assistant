@@ -11,7 +11,7 @@ from groq.types.chat import (
     ChatCompletionAssistantMessageParam,
     ChatCompletionSystemMessageParam
 )
-from .character_personality import query_engine_chat
+from .agents_personality import query_engine_chat
 from Flow_Crew_AI.Llama_RAG_Engine.llama_index_rag_engine import query_engine_big as rag_query_tool
 from Flow_Crew_AI.Llama_RAG_Engine.llama_index_rag_engine import query_engine_small as backup_tool
 
